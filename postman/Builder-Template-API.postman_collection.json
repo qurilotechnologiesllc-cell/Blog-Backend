@@ -1,0 +1,974 @@
+{
+  "info": {
+    "name": "Blog Backend API",
+    "description": "Complete Postman collection for Blog Backend routes.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Server Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                ""
+              ]
+            },
+            "description": "Checks if backend is running"
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Auth",
+      "item": [
+        {
+          "name": "User Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/user/signup",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "user",
+                "signup"
+              ]
+            }
+          }
+        },
+        {
+          "name": "User Verify OTP",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"otp\": \"{{userOtp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/user/verify-otp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "user",
+                "verify-otp"
+              ]
+            },
+            "description": "Route is GET in backend but expects body"
+          }
+        },
+        {
+          "name": "User Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let data = {};",
+                  "try { data = pm.response.json(); } catch (e) {}",
+                  "if (data.token) {",
+                  "  pm.environment.set('userToken', data.token);",
+                  "  pm.environment.set('authToken', data.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{userPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/user/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "user",
+                "login"
+              ]
+            },
+            "description": "Route is GET in backend but expects body"
+          }
+        },
+        {
+          "name": "User Forgot Password OTP",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/user/forgot-password/{{userEmail}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "user",
+                "forgot-password",
+                "{{userEmail}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "User Change Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"otp\": \"{{userOtp}}\",\n  \"new_password\": \"newStrongPass123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/user/change-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "user",
+                "change-password"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Auth",
+      "item": [
+        {
+          "name": "Admin Login (Send OTP)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/app/auth/admin/login/{{adminEmail}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "app",
+                "auth",
+                "admin",
+                "login",
+                "{{adminEmail}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Admin Verify OTP",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let data = {};",
+                  "try { data = pm.response.json(); } catch (e) {}",
+                  "if (data.token) {",
+                  "  pm.environment.set('adminToken', data.token);",
+                  "  pm.environment.set('authToken', data.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"otp\": \"{{adminOtp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/app/auth/admin/verify-otp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "app",
+                "auth",
+                "admin",
+                "verify-otp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Admin Update Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "username",
+                  "value": "Admin Updated",
+                  "type": "text"
+                },
+                {
+                  "key": "phone",
+                  "value": "9999999999",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "{{adminEmail}}",
+                  "type": "text"
+                },
+                {
+                  "key": "admin_profile",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/app/auth/admin/update-profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "app",
+                "auth",
+                "admin",
+                "update-profile"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Builder Templates",
+      "item": [
+        {
+          "name": "Create Template",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"My First Blog\",\n  \"slug\": \"my-first-blog\",\n  \"description\": \"A sample template\",\n  \"content\": {\n    \"widgets\": [\n      {\n        \"id\": \"hero-1\",\n        \"type\": \"hero\",\n        \"data\": {\n          \"heading\": \"Welcome\"\n        }\n      }\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/builder/template",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "builder",
+                "template"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Templates",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/builder/templates?status={{templateStatus}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "builder",
+                "templates"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "{{templateStatus}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Template By ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/builder/template/{{templateId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "builder",
+                "template",
+                "{{templateId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Draft",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"My Updated Blog\",\n  \"description\": \"Updated draft content\",\n  \"content\": {\n    \"widgets\": [\n      {\n        \"id\": \"hero-1\",\n        \"type\": \"hero\",\n        \"data\": {\n          \"heading\": \"Updated Heading\"\n        }\n      }\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/builder/template/{{templateId}}/draft",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "builder",
+                "template",
+                "{{templateId}}",
+                "draft"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Preview Template",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/builder/template/{{templateId}}/preview",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "builder",
+                "template",
+                "{{templateId}}",
+                "preview"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Publish Template",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/builder/template/{{templateId}}/publish",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "builder",
+                "template",
+                "{{templateId}}",
+                "publish"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Live Template By Slug",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/builder/live/{{templateSlug}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "builder",
+                "live",
+                "{{templateSlug}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search Blog By Title",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/builder/search-blog?title={{searchTitle}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "builder",
+                "search-blog"
+              ],
+              "query": [
+                {
+                  "key": "title",
+                  "value": "{{searchTitle}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Templates By Status (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/builder/get/blog-template/{{templateStatus}}?page={{page}}&limit={{limit}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "builder",
+                "get",
+                "blog-template",
+                "{{templateStatus}}"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "{{page}}"
+                },
+                {
+                  "key": "limit",
+                  "value": "{{limit}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add/Remove Favourite (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/builder/add/to-favourite/{{templateId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "builder",
+                "add",
+                "to-favourite",
+                "{{templateId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Blog Template (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/builder/delete/blog-template/{{templateId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "builder",
+                "delete",
+                "blog-template",
+                "{{templateId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Likes & Views",
+      "item": [
+        {
+          "name": "Send Like",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/post/send/likes/{{templateId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "post",
+                "send",
+                "likes",
+                "{{templateId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Seen Blog",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"template_id\": \"{{templateId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/post/seen/blog",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "post",
+                "seen",
+                "blog"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Template Images",
+      "item": [
+        {
+          "name": "Upload Template Image (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "post_thumbnail",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/template/upload-image",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "template",
+                "upload-image"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Template Image (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/template/delete-image/{{publicKey}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "template",
+                "delete-image",
+                "{{publicKey}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard (Admin)",
+      "item": [
+        {
+          "name": "Total Post Count",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/total-post-count",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "dashboard",
+                "total-post-count"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Total View Count",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/total-view-count",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "dashboard",
+                "total-view-count"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "item": [
+        {
+          "name": "Add Comment (User)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"blogId\": \"{{templateId}}\",\n  \"name\": \"John Doe\",\n  \"text\": \"Great blog, very helpful!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/comment/add",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "comment",
+                "add"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Comment",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/comment/delete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "comment",
+                "delete"
+              ]
+            },
+            "description": "Current backend route is DELETE /api/comment/delete (no :comment_id in path)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Default Settings",
+      "item": [
+        {
+          "name": "Get Default Settings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/default-setting",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "default-setting"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Default Settings",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"language\": \"English\",\n  \"timezone\": \"UTC\",\n  \"dateformat\": \"MM/DD/YYYY\",\n  \"showAuthorName\": true,\n  \"showpublishDate\": true,\n  \"cookieConsentEnabled\": true,\n  \"privacyPolicyUrl\": \"{{privacyPolicyUrl}}\",\n  \"cookieConsentVersion\": \"{{cookieConsentVersion}}\",\n  \"cookieConsentExpiryDays\": {{cookieConsentExpiryDays}},\n  \"cookieConsentBannerText\": \"{{cookieConsentBannerText}}\",\n  \"showCookieRejectButton\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/default-setting",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "default-setting"
+              ]
+            },
+            "description": "Use this request from admin settings page to save cookie consent banner configuration and other default settings."
+          }
+        },
+        {
+          "name": "Get Cookie Consent Settings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/default-setting/cookie-consent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "default-setting",
+                "cookie-consent"
+              ]
+            },
+            "description": "Public website can use this endpoint to decide whether cookie banner should be shown."
+          }
+        }
+      ]
+    }
+  ]
+}
