@@ -30,9 +30,6 @@ const putDefaultSetting = async (req, res) => {
             showCookieRejectButton
         } = req.body
 
-        console.log("click");
-        
-
         let defaultSetting = await DefaultSetting.findOne()
 
         if (!defaultSetting) {
