@@ -88,5 +88,29 @@ const deleteCommentsofBlog = async (req, res) => {
     }
 }
 
-module.exports = { AddCommentsToBlog, deleteCommentsofBlog }
+const getCommentsOfBlog = async (req, res) => {
+    try {
+        const role = req.user.role
+
+        if (role !== 'admin') {
+            return res.status(404).json({ message: 'Unauthrized only admin can view comments' })
+        }
+
+        // ── Find comments for the given blogId ─────────────────────────────────
+        const comments = await Comments.find({}).populate('userId', 'name email') // Populate user details if needed
+
+        return res.status(200).json({
+            success: true,
+            message: 'Comments retrieved successfully',
+            data: comments,
+        })
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message || 'Internal server error',
+        })
+    }
+}   
+
+module.exports = { AddCommentsToBlog, deleteCommentsofBlog, getCommentsOfBlog }
 
