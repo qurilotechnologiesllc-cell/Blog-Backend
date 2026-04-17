@@ -97,7 +97,7 @@ const getCommentsOfBlog = async (req, res) => {
         }
 
         // ── Find comments for the given blogId ─────────────────────────────────
-        const comments = await Comments.find({}).populate('userId', 'name email') // Populate user details if needed
+        const comments = await Comments.find({}).populate('userId', 'name email, profileImage') // Populate user details if needed
 
         return res.status(200).json({
             success: true,

@@ -3,6 +3,7 @@ const redis = require("../utils/redis")
 const sendMail = require("../utils/sendmail")
 const bcrypt = require("bcrypt")
 const { generateToken } = require("../middleware/authmiddleware")
+const { deleteFromCloudinary } = require("../utils/cloudinary")
 
 const generateOTP = () => {
     return Math.floor(100000 + Math.random() * 900000).toString() // 6 digit
@@ -65,7 +66,7 @@ const VerifyOTP = async (req, res) => {
         if (!savedOTP) {
             return res.status(400).json({ message: "OTP expired or not found. Please signup again." })
         }
-        
+
 
         // Step 4 — OTP match karo
         if (savedOTP !== otp.toString()) {
@@ -92,7 +93,7 @@ const VerifyOTP = async (req, res) => {
             password,       // pre save hook automatically hash karega
             isVerified: true
         })
-        
+
         await newUser.save()
 
         // Step 7 — Redis se dono keys delete karo
@@ -249,7 +250,7 @@ const loginUser = async (req, res) => {
             email: user.email,
             role: user.role
         }
-        
+
         const token = await generateToken(payload, res);
 
         // Step 6 — Response
@@ -264,5 +265,36 @@ const loginUser = async (req, res) => {
     }
 }
 
+const updateUserProfile = async (req, res) => {
+    try {
+        const userId = req.user.userId
+        const profileImage = req.file
+        const user = await User.findById(userId)
+        if (!user) {
+            return res.status(404).json({ message: "User not found" })
+        }
 
-module.exports = { SignUpUser, VerifyOTP, UserForgotPassword, verifyOtpAndChangePassword, loginUser }
+        // Agar user ke paas pehle se profile image hai, toh usse Cloudinary se delete karo
+        if (user.publicId) {
+            await deleteFromCloudinary(user.publicId)
+            user.profileImage = profileImage.path
+            user.publicId = profileImage.filename
+            await user.save()
+        } else {
+            user.profileImage = profileImage.path
+            user.publicId = profileImage.filename
+            await user.save()
+        }
+
+        return res.status(200).json({
+            message: "Profile updated successfully",
+            profileImage: user.profileImage
+        })
+    } catch (error) {
+        console.error("Update User Profile Error:", error)
+        return res.status(500).json({ message: "Internal Server Error", error: error.message })
+    }
+}
+
+
+module.exports = { SignUpUser, VerifyOTP, UserForgotPassword, verifyOtpAndChangePassword, loginUser, updateUserProfile }

@@ -18,6 +18,8 @@ const userSchema = new Schema(
             enum: ["admin", "user"], // Aapne kaha ek admin aur baaki user
             default: "user",
         },
+        profileImage: { type: String, default: "" },
+        publicId: { type: String, default: "" },
         isVerified: {
             type: Boolean,
             default: false
@@ -30,7 +32,7 @@ const userSchema = new Schema(
 userSchema.pre('save', async function (next) {
     try {
         if (!this.isModified('password')) {
-            return next()
+            return next
         }
 
         const salt = await bcrypt.genSalt(10)
