@@ -16,6 +16,11 @@ const defaultSettingSchema = new Schema({
         enum: ["MM/DD/YYYY", "DD/MM/YYYY", "YYYY/MM/DD"],
         default: "MM/DD/YYYY"
     },
+    theme: {
+        type: String,
+        enum: ["light", "dark"],
+        default: "light"
+    },
     showAuthorName: {
         type: Boolean,
         default: true

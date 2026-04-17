@@ -80,22 +80,16 @@ const verifyAdminOtp = async (req, res) => {
         const payload = {
             userId: admin._id.toString(),
             email: admin.email,
-            role: "admin"
+            role: "admin",
+            profile_Image: admin.profile_Image
         }
 
         const token = await generateToken(payload, res)
 
         // Step 8 — Response
         return res.status(200).json({
-            message: "Login successful!",
+            message: "Admin Login successful!",
             token,
-            admin: {
-                adminId: admin._id,
-                name: admin.username,
-                email: admin.email,
-                Profile: admin.profile_Image,
-                role: "admin"
-            }
         })
 
     } catch (error) {

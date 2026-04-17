@@ -4,6 +4,7 @@ const createDefaultSettingPayload = (payload = {}) => ({
     language: payload.language,
     timezone: payload.timezone,
     dateformat: payload.dateformat,
+    theme: payload.theme,
     showAuthorName: payload.showAuthorName,
     showpublishDate: payload.showpublishDate,
     cookieConsentEnabled: payload.cookieConsentEnabled,
@@ -20,6 +21,7 @@ const putDefaultSetting = async (req, res) => {
             language,
             timezone,
             dateformat,
+            theme,
             showAuthorName,
             showpublishDate,
             cookieConsentEnabled,
@@ -37,6 +39,7 @@ const putDefaultSetting = async (req, res) => {
                 language,
                 timezone,
                 dateformat,
+                theme,
                 showAuthorName,
                 showpublishDate,
                 cookieConsentEnabled,
@@ -50,6 +53,7 @@ const putDefaultSetting = async (req, res) => {
             defaultSetting.language = language || defaultSetting.language
             defaultSetting.timezone = timezone || defaultSetting.timezone
             defaultSetting.dateformat = dateformat || defaultSetting.dateformat
+            defaultSetting.theme = theme || defaultSetting.theme
             defaultSetting.showAuthorName = showAuthorName !== undefined ? showAuthorName : defaultSetting.showAuthorName
             defaultSetting.showpublishDate = showpublishDate !== undefined ? showpublishDate : defaultSetting.showpublishDate
             defaultSetting.cookieConsentEnabled = cookieConsentEnabled !== undefined ? cookieConsentEnabled : defaultSetting.cookieConsentEnabled
