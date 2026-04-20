@@ -1,4 +1,6 @@
 const Admin = require("../models/admin.models")
+const RevokedToken = require("../models/revokedToken.model")
+const { jwtVerify, SignJWT } = require("jose")
 const redis = require("../utils/redis")
 const sendMail = require("../utils/sendmail")
 const { cloudinary } = require("../utils/cloudinary")
@@ -79,6 +81,7 @@ const verifyAdminOtp = async (req, res) => {
         // Step 7 — Token generate karo
         const payload = {
             userId: admin._id.toString(),
+            username: admin.username,
             email: admin.email,
             role: "admin",
             profile_Image: admin.profile_Image
@@ -147,4 +150,40 @@ const adminUpdateProfile = async (req, res) => {
     }
 }
 
-module.exports = { LoginAdmin, verifyAdminOtp, adminUpdateProfile }
+const logoutAdmin = async (req, res) => {
+    try {
+        const token = (req.headers.authorization && req.headers.authorization.split(" ")[1]) ||
+            req.cookies?.["token"];
+            
+
+        if (!token) {
+            return res.status(400).json({ message: "No token found" });
+        }
+
+        const  role = req.user.role
+
+        if (role !== "admin") {
+            return res.status(403).json({ message: "Unauthorized: Only admins can logout from this endpoint" });
+        }
+
+        const decoded = await jwtVerify(token, new TextEncoder().encode(process.env.SECRET_KEY), {
+            issuer: "blog",
+            audience: "blog-audience"
+        });
+
+        // Token ko revoked list mein add karo
+        const revokedToken = new RevokedToken({ token, revokedAt: new Date(decoded.payload.exp * 1000) });
+        await revokedToken.save();
+
+        // Cookie clear karo
+        res.clearCookie("token", { path: "/" });
+
+        return res.status(200).json({ message: "Admin logged out successfully" });
+    } catch (error) {
+        res.clearCookie("token", { path: "/" });
+        console.error("Admin Logout Error:", error);
+        return res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+}
+
+module.exports = { LoginAdmin, verifyAdminOtp, adminUpdateProfile, logoutAdmin }

@@ -1,4 +1,6 @@
 const User = require("../models/user.models")
+const RevokedToken = require("../models/revokedToken.model")
+const { jwtVerify, SignJWT } = require("jose")
 const redis = require("../utils/redis")
 const sendMail = require("../utils/sendmail")
 const bcrypt = require("bcrypt")
@@ -296,5 +298,41 @@ const updateUserProfile = async (req, res) => {
     }
 }
 
+const logoutUser = async (req, res) => {
+    try {
+        const token = (req.headers.authorization && req.headers.authorization.split(" ")[1]) ||
+            req.cookies?.["token"];
 
-module.exports = { SignUpUser, VerifyOTP, UserForgotPassword, verifyOtpAndChangePassword, loginUser, updateUserProfile }
+
+        if (!token) {
+            return res.status(400).json({ message: "No token found" });
+        }
+
+        const role = req.user.role
+        if (role !== "user") {
+            return res.status(403).json({ message: "Unauthorized: Only users can logout from this endpoint" });
+        }
+
+        const decoded = await jwtVerify(token, new TextEncoder().encode(process.env.SECRET_KEY), {
+            issuer: "blog",
+            audience: "blog-audience"
+        });
+
+        // Token ko revoked list mein add karo
+        const revokedToken = new RevokedToken({ token, revokedAt: new Date(decoded.payload.exp * 1000) });
+        await revokedToken.save();
+
+        // Cookie clear karo
+        res.clearCookie("token", { path: "/" });
+
+        return res.status(200).json({ message: "Logout successful" });
+    } catch (error) {
+        console.error("Logout Error:", error);
+        return res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+}
+
+
+
+
+module.exports = { SignUpUser, VerifyOTP, UserForgotPassword, verifyOtpAndChangePassword, loginUser, updateUserProfile, logoutUser }

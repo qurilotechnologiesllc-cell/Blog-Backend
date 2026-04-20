@@ -117,6 +117,45 @@ const createBuilderTemplate = async (req, res) => {
   }
 }
 
+const listBuilderTemplates = async (req, res) => {
+  try {
+
+    const query = { author: req.user.userId }
+
+    const templates = await BuilderTemplate.find(query)
+      .sort({ updatedAt: -1 })
+      .select("title slug seen_count likes description comments template_thumbnail thumbnail_public_key status version publishedVersion lastSavedAt publishedAt createdAt updatedAt")
+
+    return res.status(200).json({
+      count: templates.length,
+      templates,
+    })
+  } catch (error) {
+    console.error("List Builder Templates Error:", error)
+    return res.status(500).json({ message: "Internal Server Error", error: error.message })
+  }
+}
+
+const getBuilderTemplateById = async (req, res) => {
+  try {
+    const { template_id } = req.params
+
+    const template = await BuilderTemplate.findOne({ _id: template_id, author: req.user.userId })
+
+    if (!template) {
+      return res.status(404).json({ message: "Template not found" })
+    }
+
+    return res.status(200).json({
+      template,
+      urls: makeUrls(template),
+    })
+  } catch (error) {
+    console.error("Get Builder Template Error:", error)
+    return res.status(500).json({ message: "Internal Server Error", error: error.message })
+  }
+}
+
 const updateBuilderDraft = async (req, res) => {
   try {
     const { template_id } = req.params
@@ -208,7 +247,7 @@ const updatethumbnailTemplate = async (req, res) => {
   }
 }
 
-const getBuilderTemplateById = async (req, res) => {
+const SavedAsTemplate = async (req, res) => {
   try {
     const { template_id } = req.params
 
@@ -218,12 +257,16 @@ const getBuilderTemplateById = async (req, res) => {
       return res.status(404).json({ message: "Template not found" })
     }
 
+    template.status = "saved"
+    await template.save()
+
     return res.status(200).json({
+      message: "Template saved as draft",
       template,
       urls: makeUrls(template),
     })
   } catch (error) {
-    console.error("Get Builder Template Error:", error)
+    console.error("Save As Template Error:", error)
     return res.status(500).json({ message: "Internal Server Error", error: error.message })
   }
 }
@@ -287,74 +330,10 @@ const publishBuilderTemplate = async (req, res) => {
 
     return res.status(200).json({
       message: "Template published successfully",
-      template,
       urls: makeUrls(template),
     })
   } catch (error) {
     console.error("Publish Builder Template Error:", error)
-    return res.status(500).json({ message: "Internal Server Error", error: error.message })
-  }
-}
-
-const getLiveTemplateBySlug = async (req, res) => {
-  try {
-    const { slug } = req.params
-
-    const template = await BuilderTemplate.findOne({
-      slug: normalizeSlug(slug),
-      status: "published",
-    }).select("publishedContent title slug description comments publishedAt")
-
-    if (!template) {
-      return res.status(404).json({ message: "this template in not published" })
-    }
-
-    const content =
-      template.publishedContent || template.draftContent
-
-
-    if (!content) {
-      return res.status(404).json({ message: "Live template not found" })
-    }
-
-    return res.status(200).json({
-      message: "Live template fetched",
-      templateId: template._id,
-      version: template.publishedVersion,
-      content: template.publishedContent,
-      metadata: {
-        title: template.title,
-        slug: template.slug,
-        description: template.description,
-        publishedAt: template.publishedAt,
-      },
-    })
-  } catch (error) {
-    console.error("Get Live Template Error:", error)
-    return res.status(500).json({ message: "Internal Server Error", error: error.message })
-  }
-}
-
-const listBuilderTemplates = async (req, res) => {
-  try {
-    const { status } = req.query
-
-    const query = { author: req.user.userId }
-
-    if (status && ["draft", "published"].includes(status)) {
-      query.status = status
-    }
-
-    const templates = await BuilderTemplate.find(query)
-      .sort({ updatedAt: -1 })
-      .select("title slug seen_count likes description comments template_thumbnail thumbnail_public_key status version publishedVersion lastSavedAt publishedAt createdAt updatedAt")
-
-    return res.status(200).json({
-      count: templates.length,
-      templates,
-    })
-  } catch (error) {
-    console.error("List Builder Templates Error:", error)
     return res.status(500).json({ message: "Internal Server Error", error: error.message })
   }
 }
@@ -388,22 +367,6 @@ const addTofavourite = async (req, res) => {
     })
   } catch (error) {
     console.error("Addto favourite Blog Error:", error)
-    return res.status(500).json({ message: "Internal Server Error", error: error.message })
-  }
-}
-
-const searchblogbyTitle = async (req, res) => {
-  try {
-    const searchTitle = req.query.title.toLowerCase();
-
-
-    const blog = await BuilderTemplate.findOne({
-      title: { $regex: searchTitle, $options: 'i' } // Case-insensitive
-    });
-    return res.json(blog || { message: "Not found" });
-
-  } catch (error) {
-    console.error("Search blog Error:", error)
     return res.status(500).json({ message: "Internal Server Error", error: error.message })
   }
 }
@@ -449,7 +412,7 @@ const deleteBlogTemplate = async (req, res) => {
   }
 }
 
-const getAllTemplate = async (req, res) => {
+const getAllTemplateByStatus = async (req, res) => {
   try {
     const { status } = req.params
     const page = parseInt(req.query.page) || 1
@@ -464,9 +427,9 @@ const getAllTemplate = async (req, res) => {
     const { showAuthorName, showpublishDate, dateformat, timezone } = defaultSetting
 
     // Step 1 — Validate status
-    if (!status || !["published", "draft"].includes(status)) {
+    if (!status || !["published", "draft", "saved"].includes(status)) {
       return res.status(400).json({
-        message: "Invalid status. Use 'published' or 'draft'"
+        message: "Invalid status. Use 'published', 'draft', or 'saved'"
       })
     }
 
@@ -552,17 +515,59 @@ const getAllTemplate = async (req, res) => {
     })
   }
 }
+
+// These two api fetch by User in user Dashboard
+const getAllLiveTemplate = async (req, res) => {
+  try {
+
+    const template = await BuilderTemplate.find({
+      status: "published",
+    }).select("publishedContent title slug description comments publishedAt")
+
+
+    if (template.length === 0) {
+      return res.status(404).json({ message: "Live template not found" })
+    }
+
+    return res.status(200).json({
+      message: "Live template fetched",
+      metadata: template
+    })
+  } catch (error) {
+    console.error("Get Live Template Error:", error)
+    return res.status(500).json({ message: "Internal Server Error", error: error.message })
+  }
+}
+
+const searchblogbyTitle = async (req, res) => {
+  try {
+    const searchTitle = req.query.title.toLowerCase();
+
+
+    const blog = await BuilderTemplate.findOne({
+      title: { $regex: searchTitle, $options: 'i' } // Case-insensitive
+    });
+    return res.json(blog || { message: "Not found" });
+
+  } catch (error) {
+    console.error("Search blog Error:", error)
+    return res.status(500).json({ message: "Internal Server Error", error: error.message })
+  }
+}
+
+
 module.exports = {
   createBuilderTemplate,
   updateBuilderDraft,
   updatethumbnailTemplate,
+  SavedAsTemplate,
   getBuilderTemplateById,
   previewBuilderTemplate,
   publishBuilderTemplate,
-  getLiveTemplateBySlug,
+  getAllLiveTemplate,
   listBuilderTemplates,
   addTofavourite,
   searchblogbyTitle,
   deleteBlogTemplate,
-  getAllTemplate
+  getAllTemplateByStatus
 }

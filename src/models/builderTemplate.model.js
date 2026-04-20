@@ -52,7 +52,7 @@ const builderTemplateSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["draft", "published"],
+      enum: ["draft", "saved", "published"],
       default: "draft",
       index: true,
     },

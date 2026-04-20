@@ -1,4 +1,5 @@
 const { jwtVerify, SignJWT } = require("jose")
+const RevokedToken = require("../models/revokedToken.model")
 
 const authMiddleware = async (req, res, next) => {
     try {
@@ -7,6 +8,14 @@ const authMiddleware = async (req, res, next) => {
 
         if (!token) {
             return res.status(401).json({ message: "Authentication token missing" });
+        }
+
+        // Check if the token is revoked
+        const revoked = await RevokedToken.findOne({ token });
+
+        if (revoked) {
+            res.clearCookie("token", { path: "/" });
+            return res.status(401).json({ message: "Token has been invalid please login again" });
         }
 
         // ✅ Fix 1 — TextEncoder
