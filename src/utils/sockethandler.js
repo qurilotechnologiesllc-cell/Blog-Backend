@@ -16,7 +16,7 @@ const initSocket = (server) => {
         console.log(`🟢 [Socket] New connection: ${socket.id}`)
 
         // 🔥 ALL USERS + ADMIN JOIN SAME ROOM
-        const ROOM_NAME = "guest_room"
+        const ROOM_NAME = "User_room"
         socket.join(ROOM_NAME)
 
         console.log(`📦 [Socket] ${socket.id} joined room: ${ROOM_NAME}`)

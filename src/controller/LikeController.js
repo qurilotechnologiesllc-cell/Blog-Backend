@@ -1,14 +1,18 @@
 const BuilderTemplate = require("../models/builderTemplate.model")
+const User = require("../models/user.models")
 const Notification = require("../models/notification.model")
 const redis = require('../utils/redis')
 
 const UserLikesBlogs = async (req, res) => {
     try {
         const { template_id } = req.params
+        const userId = req.user.userId
 
-        // 🔥 SAME GUEST FOR ALL USERS
-        const guestUserId = process.env.GUEST_ID
-        const guestName = "Guest User"
+        const user = await User.findById(userId).select('name')
+        if (!user) {
+            return res.status(404).json({ message: "User not found" })
+        }
+        const guestName = user.name || "Guest"
 
         const blog = await BuilderTemplate.findById(template_id)
 
@@ -25,16 +29,15 @@ const UserLikesBlogs = async (req, res) => {
         const notification = await Notification.create({
             blogId: blog._id,
             title: "New Like ❤️",
-            message: `${guestName} liked your blog`,
+            message: `${user.name} liked your blog`,
             type: "like",
-            guestUserId,
-            guestName
+            userId: userId,
+            userName: user.name
         })
 
         // 🔥 Emit to same room
-        req.io.to("guest_room").emit("new_like_notification", {
+        req.io.to("User_room").emit("new_notification", {
             message: notification.message,
-            blogId: blog._id,
             createdAt: notification.createdAt
         })
 
@@ -54,7 +57,7 @@ const SeenPostbyUser = async (req, res) => {
         const { template_id } = req.body;
         const userIP = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
         const visitordata = req.user
-        
+
         if (!template_id || !visitordata.userId || !visitordata.role === 'admin') {
             return res.status(400).json({ message: "Missing required fields" });
         }

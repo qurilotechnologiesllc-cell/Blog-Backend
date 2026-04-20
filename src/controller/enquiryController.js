@@ -1,15 +1,31 @@
 const Enquiry = require('../models/enquiry.model')
+const Notification = require('../models/notification.model')
 const sendEnquiryReplyEmail = require('../utils/sendEnquiryReplyEmail')
 
 const sendEnquirytoAdmin = async (req, res) => {
     try {
-        const { name, email, blogtitle, message, } = req.body
+        const { name, email, blogtitle, message } = req.body
 
         if (!name || !email || !blogtitle || !message) {
             return res.status(404).json({ message: 'All field is required' })
         }
 
         const response = await Enquiry.create({ name, email, blogtitle, message })
+
+        const notification = await Notification.create({
+            blogId: null,
+            title: "New Enquiry 📩",
+            message: `${name} sent you an enquiry`,
+            type: "enquiry",
+            userId: null,
+            userName: name
+        })
+
+        // Emit real-time notification to the blog owner
+        req.io.to("User_room").emit("new_notification", {
+            message: notification.message,
+            createdAt: notification.createdAt
+        })
 
         if (!response) {
             return res.status(404).json({ message: 'Invalid data' })
@@ -97,7 +113,7 @@ const replyViaEmailbyAdmin = async (req, res) => {
         }
 
         console.log(user.name, user.blogtitle);
-        
+
 
         const response = await sendEnquiryReplyEmail(email, subject, user.name, user.blogtitle, message)
 

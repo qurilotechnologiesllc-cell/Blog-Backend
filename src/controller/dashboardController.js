@@ -1,5 +1,6 @@
 const BuilderTemplate = require("../models/builderTemplate.model")
 const Enquiry = require("../models/enquiry.model")
+const Notification = require("../models/notification.model")
 
 const getTotalPost = async (req, res) => {
     try {
@@ -109,4 +110,26 @@ const totalUserEnquiry = async (req, res) => {
     }
 }
 
-module.exports = { getTotalPost, getTotalView, totalCommentsOnPost, latestblogContent, totalUserEnquiry }
+const getAllNotification = async (req, res) => {
+    try {
+        const role = req.user.role
+
+        if (role !== 'admin') {
+            return res.status(403).json({ message: 'Unauthorized only admin have access to get all notification' })
+        }
+
+        const response = await Notification.find({}, { 'message': 1, _id: 0 }).sort({ createdAt: -1 })
+
+        res.status(200).json({
+            success: true,
+            notification: response
+        })
+
+    } catch (error) {
+        console.error("fetch All notification error:", error)
+        return res.status(500).json({ message: "Internal Server Error", error: error.message })
+    }
+}
+
+
+module.exports = { getTotalPost, getTotalView, totalCommentsOnPost, latestblogContent, totalUserEnquiry, getAllNotification }

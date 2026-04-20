@@ -5,7 +5,7 @@ const notificationSchema = new Schema({
     blogId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Blog',
-        required: true,
+        default: null,
         index: true
     },
 
@@ -20,22 +20,19 @@ const notificationSchema = new Schema({
 
     type: {
         type: String,
-        enum: ['like', 'comment', 'share', 'new_blog'],
+        enum: ['like', 'comment', 'share', 'new_blog', 'enquiry'],
         default: 'like',
         index: true
     },
 
-    guestUserId: {
+    userId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'GuestUser',
-        required: true
+        ref: 'User',
+        default: null,
+        index: true
     },
 
-    guestName: {
-        type: String
-    },
-
-    guestEmail: {
+    userName: {
         type: String
     },
 

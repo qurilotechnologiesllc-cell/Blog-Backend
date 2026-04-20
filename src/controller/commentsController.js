@@ -1,4 +1,5 @@
 const Comments = require('../models/comments.models')
+const Notification = require('../models/notification.model')
 const BuilderTemplate = require('../models/builderTemplate.model')
 
 const AddCommentsToBlog = async (req, res) => {
@@ -18,10 +19,10 @@ const AddCommentsToBlog = async (req, res) => {
                 message: 'userId, blogId, name and text are required',
             })
         }
-        
+
         // ── Check blog exists ──────────────────────────────────────────────────
         const blog = await BuilderTemplate.findById(blogId)
-        
+
         if (!blog) {
             return res.status(404).json({
                 success: false,
@@ -32,12 +33,27 @@ const AddCommentsToBlog = async (req, res) => {
         // ── Create the comment ─────────────────────────────────────────────────
         const comment = await Comments.create({ userId, blogId, name, text })
 
+        const notification = await Notification.create({
+            blogId: blog._id,
+            title: "New Comment 💬",
+            message: `${name} commented on your blog`,
+            type: "comment",
+            userId: userId,
+            userName: name
+        })
+
+
         // ── Push comment _id into blog.comments array ──────────────────────────
         await BuilderTemplate.findByIdAndUpdate(
             blogId,
-            { $push: { comments: comment._id } },
-            { new: true }
+            { $push: { comments: comment._id } }
         )
+
+        // Emit real-time notification to the blog owner
+        req.io.to("User_room").emit("new_notification", {
+            message: notification.message,
+            createdAt: notification.createdAt
+        })
 
         return res.status(201).json({
             success: true,
@@ -110,7 +126,7 @@ const getCommentsOfBlog = async (req, res) => {
             message: error.message || 'Internal server error',
         })
     }
-}   
+}
 
 module.exports = { AddCommentsToBlog, deleteCommentsofBlog, getCommentsOfBlog }
 
