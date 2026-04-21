@@ -1,5 +1,6 @@
 const BuilderTemplate = require("../models/builderTemplate.model")
 const Enquiry = require("../models/enquiry.model")
+const Comment = require("../models/comments.models")
 const Notification = require("../models/notification.model")
 
 const getTotalPost = async (req, res) => {
@@ -131,5 +132,103 @@ const getAllNotification = async (req, res) => {
     }
 }
 
+const monthlyEngagementData = async (req, res) => {
+    try {
+        const role = req.user.role
+        if (role !== 'admin') {
+            return res.status(403).json({ message: 'Unauthorized' })
+        }
 
-module.exports = { getTotalPost, getTotalView, totalCommentsOnPost, latestblogContent, totalUserEnquiry, getAllNotification }
+        const year = parseInt(req.query.year) || new Date().getFullYear()
+
+        const startDate = new Date(`${year}-01-01T00:00:00.000Z`)
+        const endDate = new Date(`${year}-12-31T23:59:59.999Z`)
+
+        // ── Comments per month ─────────────────────────────────────────────
+        const commentsPerMonth = await Comment.aggregate([
+            {
+                $match: {
+                    createdAt: { $gte: startDate, $lte: endDate },
+                    isDeleted: false
+                }
+            },
+            {
+                $group: {
+                    _id: { $month: "$createdAt" },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ])
+
+        // ── Enquiries per month ────────────────────────────────────────────
+        const enquiriesPerMonth = await Enquiry.aggregate([
+            {
+                $match: {
+                    createdAt: { $gte: startDate, $lte: endDate }
+                }
+            },
+            {
+                $group: {
+                    _id: { $month: "$createdAt" },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ])
+
+        // ── Likes per month ────────────────────────────────────────────────
+        const likesPerMonth = await BuilderTemplate.aggregate([
+            {
+                $match: {
+                    updatedAt: { $gte: startDate, $lte: endDate }
+                }
+            },
+            {
+                $group: {
+                    _id: { $month: "$updatedAt" },
+                    totalLikes: { $sum: "$likes" }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ])
+
+        // ── 12 months ka array banao ───────────────────────────────────────
+        const months = [
+            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        ]
+
+        const formatData = (data, key = 'count') =>
+            months.map((_, index) => {
+                const found = data.find(d => d._id === index + 1)
+                return found ? found[key] : 0
+            })
+
+        const result = months.map((month, index) => {
+            const commentFound = commentsPerMonth.find(d => d._id === index + 1)
+            const enquiryFound = enquiriesPerMonth.find(d => d._id === index + 1)
+            const likesFound = likesPerMonth.find(d => d._id === index + 1)
+
+            return {
+                month,
+                comments: commentFound ? commentFound.count : 0,
+                enquiries: enquiryFound ? enquiryFound.count : 0,
+                likes: likesFound ? likesFound.totalLikes : 0,
+            }
+        })
+
+        return res.status(200).json({
+            success: true,
+            year,
+            data: result
+        })
+
+    } catch (error) {
+        console.error("Monthly Engagement Error:", error)
+        return res.status(500).json({ message: "Internal Server Error", error: error.message })
+    }
+}
+
+
+module.exports = { getTotalPost, getTotalView, totalCommentsOnPost, latestblogContent, totalUserEnquiry, getAllNotification, monthlyEngagementData }
