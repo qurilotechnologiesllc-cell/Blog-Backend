@@ -2,7 +2,7 @@ const express = require("express")
 const router = express.Router()
 const { SignUpUser, VerifyOTP, UserForgotPassword, verifyOtpAndChangePassword, loginUser, updateUserProfile, logoutUser } = require("../controller/userAuthController")
 const { uploadUserProfile } = require('../utils/cloudinary')
-const { authMiddleware } = require("../middleware/authMiddleware")
+const { authMiddleware } = require("../middleware/authmiddleware")
 
 router.post("/user/signup", SignUpUser)
 router.get("/user/login", loginUser)
