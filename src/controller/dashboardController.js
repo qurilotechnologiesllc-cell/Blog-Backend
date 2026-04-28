@@ -119,7 +119,7 @@ const getAllNotification = async (req, res) => {
             return res.status(403).json({ message: 'Unauthorized only admin have access to get all notification' })
         }
 
-        const response = await Notification.find({}, { 'message': 1, _id: 0 }).sort({ createdAt: -1 })
+        const response = await Notification.find({isRead: false}, { 'message': 1, _id: 0 }).sort({ createdAt: -1 })
 
         res.status(200).json({
             success: true,
@@ -230,5 +230,29 @@ const monthlyEngagementData = async (req, res) => {
     }
 }
 
+const seenNotificationByAdmin = async (req, res) => {
+    try {
+        const { notification_id } = req.params
+        const role = req.user.role
+        if (role !== 'admin') {
+            return res.status(403).json({ message: 'Unauthorized Only Admin are Allowed to see notification' })
+        }
 
-module.exports = { getTotalPost, getTotalView, totalCommentsOnPost, latestblogContent, totalUserEnquiry, getAllNotification, monthlyEngagementData }
+        const response = await Notification.findByIdAndUpdate({ _id: notification_id }, { $set: { isRead: true } })
+        if (!response) {
+            return res.status(404).json({ message: "Not found" })
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Notification seen successfully!"
+        })
+
+    } catch (error) {
+        console.error("notification seen error:", error)
+        return res.status(500).json({ message: "Internal Server Error", error: error.message })
+    }
+}
+
+
+module.exports = { getTotalPost, getTotalView, totalCommentsOnPost, latestblogContent, totalUserEnquiry, getAllNotification, monthlyEngagementData, seenNotificationByAdmin }

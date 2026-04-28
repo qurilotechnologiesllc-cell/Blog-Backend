@@ -1,7 +1,7 @@
 const express = require('express')
 
 const router = express.Router()
-const { getTotalPost, getTotalView, totalCommentsOnPost, latestblogContent, totalUserEnquiry, getAllNotification, monthlyEngagementData } = require("../controller/dashboardController")
+const { getTotalPost, getTotalView, totalCommentsOnPost, latestblogContent, totalUserEnquiry, getAllNotification, monthlyEngagementData, seenNotificationByAdmin } = require("../controller/dashboardController")
 const { authMiddleware } = require('../middleware/authmiddleware')
 
 router.get("/total-post-count", authMiddleware, getTotalPost)
@@ -11,5 +11,6 @@ router.get('/get-lastest-blog', authMiddleware, latestblogContent)
 router.get('/get-all-count', authMiddleware, totalUserEnquiry)
 router.get('/get-all-notification', authMiddleware, getAllNotification)
 router.get('/get-monthly-engagementdata', authMiddleware, monthlyEngagementData)
+router.put("/seen-notification/:notification_id", authMiddleware,  seenNotificationByAdmin)
 
 module.exports = router
