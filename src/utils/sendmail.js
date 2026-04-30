@@ -12,9 +12,9 @@ const sendOTPEmail = async (email, otp, role) => {
             pass: process.env.MAIL_PASS
         },
 
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 10000,
+        connectionTimeout: 30000,
+        greetingTimeout: 30000,
+        socketTimeout: 30000,
     });
 
     await transporter.verify();
