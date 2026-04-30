@@ -148,24 +148,29 @@ const enquiryReplyTemplate = (userName, blogTitle, adminMessage) => `
 
 // ============ SEND EMAIL FUNCTION ============
 const sendEnquiryReplyEmail = async (email, subject, userName, blogTitle, adminMessage) => {
-    const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: process.env.MAIL_USER,
-            pass: process.env.MAIL_PASS,
-        },
-    })
+  const transporter = nodemailer.createTransport({
+    host: "smtp-relay.brevo.com",
 
-    const response = await transporter.sendMail({
-        from: `"The Blog" <${process.env.MAIL_USER}>`,
-        to: email,
-        subject: subject,
-        html: enquiryReplyTemplate(userName, blogTitle, adminMessage),
-    })
+    port: 587,
 
-    if (!response) return false
+    secure: false,
 
-    return true
+    auth: {
+      user: process.env.BREVO_LOGIN,
+      pass: process.env.BREVO_PASS,
+    },
+  })
+
+  const response = await transporter.sendMail({
+    from: `"The Blog" <${process.env.BREVO_USER}>`,
+    to: email,
+    subject: subject,
+    html: enquiryReplyTemplate(userName, blogTitle, adminMessage),
+  })
+
+  if (!response) return false
+
+  return true
 }
 
-module.exports =  sendEnquiryReplyEmail 
+module.exports = sendEnquiryReplyEmail 
