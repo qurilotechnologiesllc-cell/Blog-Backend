@@ -12,7 +12,7 @@ const generateOTP = () => {
 
 const LoginAdmin = async (req, res) => {
     try {
-        const { email } = req.query  // ✅ params ki jagah body use karo
+        const { email } = req.params  // ✅ params ki jagah body use karo
 
         // Step 1 — Validation
         if (!email) {

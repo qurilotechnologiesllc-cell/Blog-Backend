@@ -1,39 +1,46 @@
-const nodemailer = require("nodemailer")
+const nodemailer = require("nodemailer");
 
-// ============ SEND EMAIL FUNCTION ============
 const sendOTPEmail = async (email, otp, role) => {
+
     const transporter = nodemailer.createTransport({
-        service: "gmail",
+        host: "smtp.gmail.com",
+        port: 587,
+        secure: false,
+
         auth: {
             user: process.env.MAIL_USER,
-            pass: process.env.MAIL_PASS   // Gmail App Password
-        }
-    })
+            pass: process.env.MAIL_PASS
+        },
 
-    if (role === 'admin') {
-        return await transporter.sendMail({
-            from: `"Blog App" <${process.env.MAIL_USER}>`,
-            to: email,
-            subject: "Admin Login OTP",
-            html: `
-                <h2>Admin Login Verification</h2>
-                <p>Your OTP is: <strong>${otp}</strong></p>
-                <p>This OTP will expire in <strong>10 minutes</strong>.</p>
-                <p>If you did not request this, please ignore this email.</p>
-            `
-        })
-    }
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 10000,
+    });
 
-    await transporter.sendMail({
+    await transporter.verify();
+    console.log("SMTP Connected Successfully");
+
+    const mailOptions = {
         from: `"Blog App" <${process.env.MAIL_USER}>`,
         to: email,
-        subject: "Your OTP for Signup Verification",
+        subject:
+            role === "admin"
+                ? "Admin Login OTP"
+                : "Your OTP for Signup Verification",
+
         html: `
-            <h2>Email Verification</h2>
+            <h2>${role === "admin"
+                ? "Admin Login Verification"
+                : "Email Verification"
+            }</h2>
+
             <p>Your OTP is: <strong>${otp}</strong></p>
+
             <p>This OTP will expire in <strong>10 minutes</strong>.</p>
         `
-    })
-}
+    };
 
-module.exports = sendOTPEmail
+    return await transporter.sendMail(mailOptions);
+};
+
+module.exports = sendOTPEmail;
