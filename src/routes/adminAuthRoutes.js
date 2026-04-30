@@ -4,7 +4,7 @@ const { LoginAdmin, verifyAdminOtp, adminUpdateProfile, logoutAdmin } = require(
 const { uploadAdminProfile } = require("../utils/cloudinary")
 const { authMiddleware } = require("../middleware/authmiddleware")
 
-router.get("/admin/login/:email", LoginAdmin)
+router.get("/admin/login", LoginAdmin)
 
 router.post("/admin/verify-otp", verifyAdminOtp)
 
