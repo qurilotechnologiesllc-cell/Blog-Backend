@@ -119,7 +119,7 @@ const getAllNotification = async (req, res) => {
             return res.status(403).json({ message: 'Unauthorized only admin have access to get all notification' })
         }
 
-        const response = await Notification.find({isRead: false}, { 'message': 1, _id: 0 }).sort({ createdAt: -1 })
+        const response = await Notification.find({isRead: false}, { 'message': 1, }).sort({ createdAt: -1 })
 
         res.status(200).json({
             success: true,
