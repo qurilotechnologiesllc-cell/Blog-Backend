@@ -78,8 +78,7 @@ const ensureUniqueSlug = async (slug, excludeId = null) => {
 }
 
 const makeUrls = (template) => ({
-  previewPath: `/preview/${template._id}`,
-  livePath: `/page/${template.slug}`,
+  previewPath: `/preview/${template._id}/page/${template.slug}`,
 })
 
 const createBuilderTemplate = async (req, res) => {
@@ -102,8 +101,6 @@ const createBuilderTemplate = async (req, res) => {
       author: req.user.userId,
       lastSavedAt: new Date(),
     })
-
-    console.log(makeUrls(template));
 
 
     return res.status(201).json({

@@ -12,6 +12,7 @@ const dashboardRoutes = require("./routes/dashboardRoutes")
 const commentsRoutes = require('./routes/commentsRoutes')
 const enquiryRoutes = require('./routes/enquiryRoutes')
 const admindefaultSettingRoutes = require('./routes/admindefaultSettingRoutes')
+const SEORoutes = require("./routes/postSeoRoutes")
 
 const { initSocket } = require('./utils/sockethandler')
 const server = http.createServer(app)
@@ -44,5 +45,6 @@ app.use('/api/dashboard', dashboardRoutes)
 app.use('/api/comment', commentsRoutes)
 app.use('/api/enquiry', enquiryRoutes)
 app.use('/api/admin', admindefaultSettingRoutes)
+app.use('/api/seo', SEORoutes)
 
 module.exports = { app, server }
