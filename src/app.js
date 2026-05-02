@@ -21,8 +21,9 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
 
 app.use(cors({
-    origin: "https://blog-cms-delta-nine.vercel.app",
-    methods: ["GET", "POST", "PUT", "DELETE"]
+    origin: ["https://blog-cms-delta-nine.vercel.app", 'http://localhost:3000'],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
 }))
 
 // Initialize Socket.IO
