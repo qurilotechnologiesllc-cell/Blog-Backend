@@ -133,7 +133,8 @@ const adminUpdateProfile = async (req, res) => {
         // Step 5 — DB update karo
         const updatedAdmin = await Admin.findByIdAndUpdate(
             adminId,
-            { $set: updateData }
+            { $set: updateData }, 
+            { new: true }   // 🔥 yehi magic hai
         ).select("-__v")
 
         return res.status(200).json({
